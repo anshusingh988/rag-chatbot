@@ -46,7 +46,7 @@ class OpenAILLM(LLM):
     def __init__(self):
         from openai import AsyncOpenAI
 
-        self.client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
+        self.client = AsyncOpenAI(api_key=config.OPENAI_API_KEY, base_url=config.OPENAI_BASE_URL or None)
 
     async def stream(self, system, messages, hits=None):
         resp = await self.client.chat.completions.create(

@@ -30,6 +30,7 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5-5")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "")
 
 # Embeddings: "hash" (offline, default) | "st" (sentence-transformers) | "openai"
 EMBEDDER = os.getenv("EMBEDDER", "hash").lower()
