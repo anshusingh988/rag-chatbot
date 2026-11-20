@@ -8,6 +8,8 @@ export interface Doc {
   status: "processing" | "ready" | "failed"; error: string; n_chunks: number; created_at: string;
 }
 
+const BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+
 const LS = "rag_auth";
 export interface Auth { access_token: string; refresh_token: string; user: User }
 
@@ -20,7 +22,7 @@ export const setAuth = (a: Auth | null) =>
 async function refresh(): Promise<boolean> {
   const a = getAuth();
   if (!a) return false;
-  const r = await fetch("/api/auth/refresh", {
+  const r = await fetch(`${BASE}/api/auth/refresh`, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh_token: a.refresh_token }),
   });
@@ -34,7 +36,7 @@ export async function api<T = any>(path: string, init: RequestInit = {}, retry =
   const headers: Record<string, string> = { ...(init.headers as any) };
   if (a) headers.Authorization = `Bearer ${a.access_token}`;
   if (init.body && !(init.body instanceof FormData)) headers["Content-Type"] = "application/json";
-  const r = await fetch(path, { ...init, headers });
+  const r = await fetch(`${BASE}${path}`, { ...init, headers });
   if (r.status === 401 && retry && a && (await refresh())) return api<T>(path, init, false);
   if (!r.ok) {
     let msg = r.statusText;
@@ -59,7 +61,8 @@ export function streamChat(
     const a = getAuth();
     if (!a) return reject(new Error("Not signed in"));
     const proto = location.protocol === "https:" ? "wss" : "ws";
-    const ws = new WebSocket(`${proto}://${location.host}/ws/chat?token=${encodeURIComponent(a.access_token)}`);
+    const wsBase = BASE ? BASE.replace(/^http/, "ws") : `${proto}://${location.host}`;
+    const ws = new WebSocket(`${wsBase}/ws/chat?token=${encodeURIComponent(a.access_token)}`);
     ws.onopen = () => ws.send(JSON.stringify({ message, conversation_id: conversationId }));
     ws.onmessage = (e) => {
       const ev = JSON.parse(e.data);
